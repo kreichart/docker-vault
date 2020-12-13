@@ -1,7 +1,7 @@
-FROM alpine:3.10
+FROM frolvlad/alpine-glibc:alpine-3.10_glibc-2.30
 
 # This is the release of Vault to pull in.
-ARG VAULT_VERSION=1.6.0
+ARG VAULT_VERSION=1.5.4
 
 # Create a vault user and group first so the IDs get set the same way,
 # even as the rest of this may change over time.
@@ -44,6 +44,17 @@ RUN set -eux; \
     gpgconf --kill gpg-agent && \
     apk del gnupg openssl && \
     rm -rf /root/.gnupg
+
+
+# Install OC cli tool
+
+RUN apk add --no-cache --virtual .build-deps \
+        curl \
+        tar \
+    && curl --retry 7 -Lo /tmp/client-tools.tar.gz "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/oc/4.6/linux/oc.tar.gz"
+RUN tar zxf /tmp/client-tools.tar.gz -C /bin oc \
+    && rm /tmp/client-tools.tar.gz \
+    && apk del .build-deps
 
 # /vault/logs is made available to use as a location to store audit logs, if
 # desired; /vault/file is made available to use as a location with the file
